@@ -30,7 +30,7 @@ def whois(target):
 	p.wait()
 	return(p.stdout.read())
 
-
+# Finally, retrieve WHOIS data using the OS whois command for both the domain and network
 for data in domain, ipaddr:
 	print "WHOIS data for", data
 	print whois(data)
