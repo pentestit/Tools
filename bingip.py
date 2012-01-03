@@ -1,12 +1,11 @@
 #!/usr/bin/env python
 #
-# Queries an IP address on Bing and returns all the domains associated
+# Queries an IP address on Bing and returns all the domains associated - currently limited to 50
 #
 import sys
 from BeautifulSoup import BeautifulSoup
 import urllib2
 import urlparse
-import re
 
 ipaddr = sys.argv[1]
 cookie = "SRCHHPGUSR=NEWWND=0&NRSLT=50&SRCHLANG=&AS=1&ADLT=DEMOTE" # We set this so we get up to 50 results per page
