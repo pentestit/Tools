@@ -7,6 +7,10 @@ from BeautifulSoup import BeautifulSoup
 import urllib2
 import urlparse
 
+if len(sys.argv) < 2:
+	print "usage: %s <IP Address>" % sys.argv[0]
+	sys.exit(1)
+
 ipaddr = sys.argv[1]
 cookie = "SRCHHPGUSR=NEWWND=0&NRSLT=50&SRCHLANG=&AS=1&ADLT=DEMOTE" # We set this so we get up to 50 results per page
 
