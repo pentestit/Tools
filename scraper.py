@@ -54,7 +54,7 @@ try:
 	handle = urlopen(req)
 
 except IOError, e:
-	print 'Failed to open "%s"' % url
+	print 'Failed: %s' % e
 	sys.exit(1)
 
 else:
