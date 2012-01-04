@@ -9,14 +9,22 @@ import socket
 import subprocess
 import re
 
+# Initialise some vars
+argdomain=None
+
 # Parse command line arguments
 parser = argparse.ArgumentParser(description='Simple WHOIS fetcher')
 parser.add_argument('--target','-t', action="store", dest="host", help='The host to retrieve data for', required=True)
+parser.add_argument('--domain','-d', action="store", dest="argdomain", help='The domain to retrieve data for', required=False)
 args = parser.parse_args()
 
 # Set some vars
 host = args.host
-domain = re.sub("^www\.", "", host) # Remove www if specified, we might need for IP lookup but not for WHOIS
+if argdomain is None: 
+	domain = argdomain
+else:
+	domain = re.sub("^www\.", "", host) # Remove www if specified, we might need for IP lookup but not for WHOIS
+
 
 try: 
 	ipaddr = socket.gethostbyname(host) # Need to fix to use getaddinfo as this does not support IPv6
