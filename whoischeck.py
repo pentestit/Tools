@@ -20,7 +20,7 @@ args = parser.parse_args()
 
 # Set some vars
 host = args.host
-if argdomain is None: 
+if argdomain is not None: 
 	domain = argdomain
 else:
 	domain = re.sub("^www\.", "", host) # Remove www if specified, we might need for IP lookup but not for WHOIS
