@@ -1,71 +1,94 @@
 #!/usr/bin/env python
+#
+# Command line web page fetcher for use in dodgy site analysis.
+# Can log redirects, use a proxy server, display headers and cookies received as well as output the webpage raw.
+# Features to be added, identify interesting content in the page such as JavaScript, Flash or Java
+#
+# This is version 2, rewritten to use Mechanize so you'll need that to run it as well as argparse, everything else
+# is pretty standard.
+#
+# Author: Marc Wickenden
+# Date: January 2011
 
-import os
 import sys
+import mechanize
+import logging
 import argparse
-import urllib2
 import cookielib
 
 # Now parse the command line arguments
-parser = argparse.ArgumentParser(description='Command line web page fetcher', epilog="Set http_proxy to http://<proxy>:<port> to use a proxy")
-parser.add_argument('--target', '-t', action="store", dest="url", help='The target url to scrape', required=True)
+parser = argparse.ArgumentParser(description='Command line web page fetcher', epilog="Set http_proxy to http://<proxy>:<port> to use a proxy or use --proxy")
+parser.add_argument('--target', '-t', action="store", dest="url", help='The target url to open', required=True)
 parser.add_argument('--headers', '-x', action='store_true', dest="headers", help='Print the HTTP headers')
 parser.add_argument('--cookies', '-c', action='store_true', dest="cookies", help='Display received cookies')
+parser.add_argument('--redirects', '-r', action='store_true', dest="redirects", default=False, help='Display redirect URLs')
 parser.add_argument('--user-agent', '-u', action='store', dest="useragent", help='Send this User Agent')
+parser.add_argument('--proxy', '-p', action='store', dest="proxy", default="http://localhost:8118", help='Use this proxy server (defaults to http://localhost:8118 - Tor)')
+parser.add_argument('--no-proxy', '-n', action='store_true', dest="noproxy", default=False, help="Don't use a proxy server")
+parser.add_argument('--verbose', '-v', action='store_true', dest="verbose", default=False, help="Be verbose")
 args = parser.parse_args()
 
-# Set some values
-url = args.url
+# Set up some variables for ease of use
 headers = args.headers
 cookies = args.cookies
-txdata = None
+redirects = args.redirects
+proxy = args.proxy
+noproxy = args.noproxy
+url = args.url
+verbose = args.verbose
+
 if args.useragent: 
 	useragent = args.useragent
 else: 
-	useragent = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.1 (KHTML, like Gecko) Chrome/14.0.835.202 Safari/535.1"
+	#useragent = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.1 (KHTML, like Gecko) Chrome/14.0.835.202 Safari/535.1"
+	useragent = "-" # Anything "proper browser string" means the redirect logging can break as sites use JavaScript
 
-txheaders = {'User-agent' : useragent }
+# Set up logging details
+logger = logging.getLogger("mechanize")
+logger.addHandler(logging.StreamHandler(sys.stderr))
+logger.setLevel(logging.INFO)
 
-# Set up the cookie handling
+# Set up the request
+br = mechanize.Browser()
+br.addheaders = [('User-agent', useragent)]
+br.set_handle_robots(False)
+br.set_handle_refresh(True)
+br.set_handle_equiv(True)
+
+# Set up cookie handling
 COOKIEFILE = '/tmp/cookies.lwp'
-cj = None
-urlopen = urllib2.urlopen
-Request = urllib2.Request
 cj = cookielib.LWPCookieJar()
+br.set_cookiejar(cj)
 
-if cj is not None:
-	if os.path.isfile(COOKIEFILE):
-		# load any existing cookies
-		cj.load(COOKIEFILE)	
-	
-	opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
-	urllib2.install_opener(opener)
-	
+# Do we want to log redirects?
+if redirects is True:
+	if verbose: print "Log redirects"
+	br.set_debug_redirects(True)
 
-# We're ready to try this out
+# Set a proxy server unless noproxy
+if noproxy is False:
+	if verbose: print "Proxy set to %s" % proxy
+	br.set_proxies({"http": proxy}) 
+
+# Open the specified URL
 try:
-	# create the request object
-	req = Request(url, txdata, txheaders)
-	
-	# open a handle on the url
-	#if args.proxy:
-	#	handle = urlopen(req, proxies=proxies)
-	#else:
-	handle = urlopen(req)
-
+	r = br.open(url)
 except IOError, e:
-	print '%s: %s' % (url, e)
+	print "%s: %s" % (url, e)
 	sys.exit(1)
-
 else:
+	httpheaders = r.info()
+	html = r.read()
+
 	if headers:
-		print handle.info()
+		print
+		print httpheaders
 
 	if cookies:
 		print "Cookies received: "
 		for index, cookie in enumerate(cj):
 			print index, ' : ', cookie
-		cj.save(COOKIEFILE)
+		print
+		#cj.save(COOKIEFILE)
 
-	print handle.read(),
-	handle.close()
+	print html,
