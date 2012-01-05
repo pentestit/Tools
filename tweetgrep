@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 #
-# Simple script which prints the specified Twitter user's tweets
-# one line at a time, useful for parsing with grep, etc
+# Simple script which allows grepping of a twitter user's tweets
 # 
 import sys
 import re
