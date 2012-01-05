@@ -1,0 +1,30 @@
+#!/usr/bin/env python
+#
+# Simple script which prints the specified Twitter user's tweets
+# one line at a time, useful for parsing with grep, etc
+# 
+import sys
+import re
+import twitter
+
+# Check we've got an argument
+if len(sys.argv) < 3:
+	print "usage: tweetgrep <search pattern> <twitter handle>"
+	sys.exit(1)
+
+# Takes two arguments, the search pattern and the twitter handle
+pattern = sys.argv[1]
+user = sys.argv[2]
+api = twitter.Api()
+r = re.compile(pattern)
+
+# Loop through the tweets and print one on each line
+try:
+	statuses = api.GetUserTimeline(user)
+except IOError, e:
+	print "Error: %s" % e
+	sys.exit(1)
+else:
+	for s in statuses:
+		if r.search(s.text):
+			print s.text
