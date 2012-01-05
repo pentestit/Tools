@@ -54,7 +54,7 @@ try:
 	handle = urlopen(req)
 
 except IOError, e:
-	print 'Failed: %s' % e
+	print '%s: %s' % (url, e)
 	sys.exit(1)
 
 else:
@@ -67,5 +67,5 @@ else:
 			print index, ' : ', cookie
 		cj.save(COOKIEFILE)
 
-	print handle.read()	
+	print handle.read(),
 	handle.close()
