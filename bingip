@@ -24,7 +24,7 @@ opener.addheaders.append(('Cookie', cookie))
 response = opener.open(url)
 html = response.read()
 
-# Parse it with BeautifulSoup....hmmm, beautiful
+# Parse it with BeautifulSoup....mmm, beautiful
 soup = BeautifulSoup(html)
 divs = soup.findAll('div', attrs={'class':'sb_tlst'})
 

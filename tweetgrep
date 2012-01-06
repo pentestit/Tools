@@ -20,7 +20,7 @@ r = re.compile(pattern)
 # Loop through the tweets and print one on each line
 try:
 	statuses = api.GetUserTimeline(user)
-except IOError, e:
+except twitter.TwitterError, e:
 	print "Error: %s" % e
 	sys.exit(1)
 else:
