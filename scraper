@@ -19,29 +19,35 @@ import cookielib
 # Now parse the command line arguments
 parser = argparse.ArgumentParser(description='Command line web page fetcher', epilog="Set http_proxy to http://<proxy>:<port> to use a proxy or use --proxy")
 parser.add_argument('--target', '-t', action="store", dest="url", help='The target url to open', required=True)
-parser.add_argument('--headers', '-x', action='store_true', dest="headers", help='Print the HTTP headers')
 parser.add_argument('--cookies', '-c', action='store_true', dest="cookies", help='Display received cookies')
-parser.add_argument('--redirects', '-r', action='store_true', dest="redirects", default=False, help='Display redirect URLs')
-parser.add_argument('--user-agent', '-u', action='store', dest="useragent", help='Send this User Agent')
+parser.add_argument('--forms', '-f', action='store_true', dest="forms", help='Display forms in page')
+parser.add_argument('--submit-form', action='store', dest="submitform", type=int, help='Submit this form number or name')
+parser.add_argument('--headers', '-x', action='store_true', dest="headers", help='Print the HTTP headers')
 parser.add_argument('--proxy', '-p', action='store', dest="proxy", default="http://localhost:8118", help='Use this proxy server (defaults to http://localhost:8118 - Tor)')
 parser.add_argument('--no-proxy', '-n', action='store_true', dest="noproxy", default=False, help="Don't use a proxy server")
+parser.add_argument('--redirects', '-r', action='store_true', dest="redirects", default=False, help='Display redirect URLs')
+parser.add_argument('--user-agent', '-u', action='store', dest="useragent", help='Send this User Agent')
 parser.add_argument('--verbose', '-v', action='store_true', dest="verbose", default=False, help="Be verbose")
+parser.add_argument('--no-content', '-z', action='store_true', dest="nocontent", default=False, help="Don't print body of HTML")
 args = parser.parse_args()
 
-# Set up some variables for ease of use
-headers = args.headers
+# Set up some variables for ease of use - there's really no need for this but it makes my life easier
 cookies = args.cookies
-redirects = args.redirects
+forms = args.forms
+submitform = args.submitform
+headers = args.headers
 proxy = args.proxy
 noproxy = args.noproxy
+nocontent = args.nocontent
+redirects = args.redirects
 url = args.url
 verbose = args.verbose
 
 if args.useragent: 
 	useragent = args.useragent
 else: 
-	#useragent = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.1 (KHTML, like Gecko) Chrome/14.0.835.202 Safari/535.1"
-	useragent = "-" # Anything "proper browser string" means the redirect logging can break as sites use JavaScript
+	useragent = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.1 (KHTML, like Gecko) Chrome/14.0.835.202 Safari/535.1"
+	#useragent = "-" # Anything "proper browser string" means the redirect logging can break as sites use JavaScript
 
 # Set up logging details
 logger = logging.getLogger("mechanize")
@@ -80,6 +86,22 @@ else:
 	httpheaders = r.info()
 	html = r.read()
 
+	if forms:
+		fc = 0
+		print "Forms on page: "
+		for f in br.forms():
+			print "%d : %s : %s" % (fc, f.name, f)
+			print f
+			fc += 1
+
+	if submitform is not None:
+		if verbose: print "Submitting form %d" % submitform
+		br.select_form(nr=submitform)
+		br.submit()
+		if verbose: print "Form response:"
+		print br.response().read()
+		
+
 	if headers:
 		print
 		print httpheaders
@@ -91,4 +113,5 @@ else:
 		print
 		#cj.save(COOKIEFILE)
 
-	print html,
+	if nocontent is False:
+		print html,
