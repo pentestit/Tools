@@ -1,4 +1,4 @@
 bingip - command line tool which queries bing.com and returns a list of domains hosted on an IP address
 scraper - command line URL fetcher which can dump cookies and headers
 tweetgrep - grep a user's tweets on Twitter
-whoischeck - performs whois query on hostname and it's network
+whoischeck - performs whois query on hostname and its network
